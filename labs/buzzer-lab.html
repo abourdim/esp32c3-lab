@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="paper">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Buzzer · ESP32-C3 Lab</title>
+<link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-lab="buzzer" data-lab-title="🎹 Buzzer">
+
+<div class="lab-content">
+  <h2>One octave + freq sweep</h2>
+  <p class="lab-desc">Each key sends <code>BUZZ:freq,duration</code>. Custom freq + duration sliders below for sweeping. <code>BUZZ:OFF</code> kills the tone.</p>
+
+  <div class="piano" id="piano"></div>
+
+  <div class="section">
+    <h3>Custom tone</h3>
+    <div class="row">
+      <label>Freq:
+        <input type="range" id="freq" min="50" max="2000" step="10" value="440">
+      </label>
+      <span class="value-readout" id="freq-val">440 Hz</span>
+    </div>
+    <div class="row">
+      <label>Duration:
+        <input type="range" id="dur" min="50" max="2000" step="50" value="300">
+      </label>
+      <span class="value-readout" id="dur-val">300 ms</span>
+    </div>
+    <div class="preset-row">
+      <button id="play" class="primary">▶ Play</button>
+      <button id="off">⏹ Off</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>Tunes</h3>
+    <div class="preset-row">
+      <button data-tune="boot">🚀 Boot tune</button>
+      <button data-tune="sad">😢 Sad trombone</button>
+      <button data-tune="alarm">🚨 Alarm</button>
+      <button data-tune="warble">🎉 Warble</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/i18n.js"></script>
+<script src="../js/ble.js"></script>
+<script src="../js/protocol.js"></script>
+<script src="../js/ui.js"></script>
+<script src="../js/lab-shell.js"></script>
+
+<script>
+/* equal-temperament from C4 to C5 */
+const NOTES = [
+  { n: 'C4', f: 262 },
+  { n: 'D4', f: 294 },
+  { n: 'E4', f: 330 },
+  { n: 'F4', f: 349 },
+  { n: 'G4', f: 392 },
+  { n: 'A4', f: 440 },
+  { n: 'B4', f: 494 },
+  { n: 'C5', f: 523 },
+];
+
+const piano = document.getElementById('piano');
+NOTES.forEach((note, i) => {
+  const k = document.createElement('button');
+  k.className = 'key';
+  k.innerHTML = `<small>${note.f} Hz</small>${note.n}`;
+  k.addEventListener('click', () => {
+    if (BLE.isConnected()) Protocol.buzz(note.f, 250);
+    k.classList.add('playing');
+    setTimeout(() => k.classList.remove('playing'), 260);
+  });
+  piano.appendChild(k);
+});
+
+/* keyboard 1-8 mapping */
+window.addEventListener('keydown', e => {
+  const idx = parseInt(e.key, 10);
+  if (idx >= 1 && idx <= 8) {
+    const k = piano.children[idx - 1];
+    if (k) k.click();
+  }
+});
+
+const freqEl = document.getElementById('freq');
+const durEl  = document.getElementById('dur');
+const freqVal = document.getElementById('freq-val');
+const durVal = document.getElementById('dur-val');
+
+freqEl.addEventListener('input', () => freqVal.textContent = freqEl.value + ' Hz');
+durEl.addEventListener('input',  () => durVal.textContent  = durEl.value + ' ms');
+
+document.getElementById('play').addEventListener('click', () => {
+  if (BLE.isConnected()) Protocol.buzz(parseInt(freqEl.value), parseInt(durEl.value));
+});
+document.getElementById('off').addEventListener('click', () => {
+  if (BLE.isConnected()) Protocol.buzzOff();
+});
+
+/* tunes — sequence of (freq, duration) with delay between */
+const TUNES = {
+  boot:   [[262,140],[330,140],[392,140],[523,260]],
+  sad:    [[523,260],[440,260],[349,260],[262,520]],
+  alarm:  [[1000,200],[600,200],[1000,200],[600,200],[1000,200]],
+  warble: [[440,80],[660,80],[440,80],[660,80],[880,260]],
+};
+
+document.querySelectorAll('[data-tune]').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    if (!BLE.isConnected()) return;
+    const seq = TUNES[btn.dataset.tune];
+    for (const [f, d] of seq) {
+      await Protocol.buzz(f, d);
+      await new Promise(r => setTimeout(r, d + 30));
+    }
+  });
+});
+</script>
+</body>
+</html>

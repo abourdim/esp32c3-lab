@@ -1,0 +1,29 @@
+# ─── Build / cache ─────────────────────────────────
+**/.pio/
+**/node_modules/
+**/build/
+**/.cache/
+
+# ─── Editor / IDE ──────────────────────────────────
+**/.vscode/
+**/.idea/
+**/.vs/
+*.swp
+*.swo
+
+# ─── Tooling state ─────────────────────────────────
+**/.claude/
+
+# ─── Logs ──────────────────────────────────────────
+*.log
+**/logs/
+
+# ─── OS junk ───────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.stackdump
+
+# ─── KiCad cruft (none here, but in case fw includes hw) ─
+**/*-backups/
+**/~*.lck
+**/fp-info-cache

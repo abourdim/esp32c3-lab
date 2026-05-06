@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="paper">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Servo · ESP32-C3 Lab</title>
+<link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-lab="servo" data-lab-title="⚙️ Servo">
+
+<div class="lab-content">
+  <h2>S1 (J4) · S2 (J5)</h2>
+  <p class="lab-desc">Drag the sliders to position the servos. Sweep buttons walk a servo back and forth at controllable speed. Each move sends <code>SRV:i,angle</code> (0..180); sweeps send <code>SWEEP:i,from,to,duration_ms</code>.</p>
+
+  <div class="alert warn">
+    <strong>// mode conflict</strong>
+    J4 (GPIO 6) and J5 (GPIO 10) are also wired to the TB6612FNG motor driver (BIN1, PWMB). The first <code>SRV:</code> command from this lab puts the firmware into <strong>servo mode</strong>; motor B will not respond until you reset the board or send <code>MODE:motors</code>.
+  </div>
+
+  <div class="section">
+    <h3>Servo 1 (J4)</h3>
+    <div class="row">
+      <label>Angle:
+        <input type="range" id="s1" min="0" max="180" step="1" value="90">
+      </label>
+      <span class="value-readout" id="s1-val">90°</span>
+    </div>
+    <div class="preset-row">
+      <button data-srv="1" data-angle="0">0°</button>
+      <button data-srv="1" data-angle="45">45°</button>
+      <button data-srv="1" data-angle="90">90°</button>
+      <button data-srv="1" data-angle="135">135°</button>
+      <button data-srv="1" data-angle="180">180°</button>
+      <button data-sweep="1">↔ Sweep</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>Servo 2 (J5)</h3>
+    <div class="row">
+      <label>Angle:
+        <input type="range" id="s2" min="0" max="180" step="1" value="90">
+      </label>
+      <span class="value-readout" id="s2-val">90°</span>
+    </div>
+    <div class="preset-row">
+      <button data-srv="2" data-angle="0">0°</button>
+      <button data-srv="2" data-angle="45">45°</button>
+      <button data-srv="2" data-angle="90">90°</button>
+      <button data-srv="2" data-angle="135">135°</button>
+      <button data-srv="2" data-angle="180">180°</button>
+      <button data-sweep="2">↔ Sweep</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/i18n.js"></script>
+<script src="../js/ble.js"></script>
+<script src="../js/protocol.js"></script>
+<script src="../js/ui.js"></script>
+<script src="../js/lab-shell.js"></script>
+
+<script>
+const s1 = document.getElementById('s1');
+const s2 = document.getElementById('s2');
+const s1v = document.getElementById('s1-val');
+const s2v = document.getElementById('s2-val');
+
+const SEND_INTERVAL_MS = 60;
+let last1 = -1, last2 = -1;
+let lastTx = 0;
+
+function sendServo(i, angle) {
+  const now = performance.now();
+  const lastVal = i === 1 ? last1 : last2;
+  if (angle === lastVal && now - lastTx < SEND_INTERVAL_MS) return;
+  if (i === 1) last1 = angle; else last2 = angle;
+  lastTx = now;
+  if (BLE.isConnected()) Protocol.servo(i, angle);
+}
+
+s1.addEventListener('input', () => {
+  s1v.textContent = s1.value + '°';
+  sendServo(1, parseInt(s1.value, 10));
+});
+s2.addEventListener('input', () => {
+  s2v.textContent = s2.value + '°';
+  sendServo(2, parseInt(s2.value, 10));
+});
+
+document.querySelectorAll('[data-srv]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const idx   = parseInt(btn.dataset.srv, 10);
+    const angle = parseInt(btn.dataset.angle, 10);
+    if (idx === 1) { s1.value = angle; s1v.textContent = angle + '°'; }
+    else           { s2.value = angle; s2v.textContent = angle + '°'; }
+    sendServo(idx, angle);
+  });
+});
+
+document.querySelectorAll('[data-sweep]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const idx = parseInt(btn.dataset.sweep, 10);
+    if (BLE.isConnected()) Protocol.servoSweep(idx, 0, 180, 1500);
+  });
+});
+</script>
+</body>
+</html>

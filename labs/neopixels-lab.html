@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="paper">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NeoPixels · ESP32-C3 Lab</title>
+<link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-lab="neopixels" data-lab-title="🌈 NeoPixels">
+
+<div class="lab-content">
+  <h2>D1 → D2 → D3 → D4</h2>
+  <p class="lab-desc">The four onboard RGB LEDs are daisy-chained on GPIO 5. Pick a color per pixel, or paint them all at once. Each command is <code>RGB:i,r,g,b</code>; <code>RGB:ALL,…</code> paints all four; <code>RGB:CLEAR</code> turns them off.</p>
+
+  <div class="pixel-strip" id="strip">
+    <!-- generated -->
+  </div>
+
+  <div class="row">
+    <button id="all-off" class="primary">⏹ All off</button>
+    <label>All:
+      <input type="color" id="all-color" value="#00ff80">
+    </label>
+    <button id="all-apply">Paint all</button>
+  </div>
+
+  <div class="section">
+    <h3>Presets</h3>
+    <div class="preset-row">
+      <button data-preset="rainbow">🌈 Rainbow</button>
+      <button data-preset="red">🔴 All red</button>
+      <button data-preset="green">🟢 All green</button>
+      <button data-preset="blue">🔵 All blue</button>
+      <button data-preset="warm">☀️ Warm</button>
+      <button data-preset="ice">❄️ Ice</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/i18n.js"></script>
+<script src="../js/ble.js"></script>
+<script src="../js/protocol.js"></script>
+<script src="../js/ui.js"></script>
+<script src="../js/lab-shell.js"></script>
+
+<script>
+const strip = document.getElementById('strip');
+const colors = ['#ff0040', '#00ff40', '#4080ff', '#ff8000'];
+
+function buildStrip() {
+  strip.innerHTML = '';
+  for (let i = 0; i < 4; i++) {
+    const div = document.createElement('div');
+    div.className = 'pixel';
+    div.dataset.i = i;
+    div.style.background = colors[i];
+    div.innerHTML = `<span class="label">D${i+1}</span><input type="color" value="${colors[i]}">`;
+    div.querySelector('input').addEventListener('input', e => {
+      colors[i] = e.target.value;
+      div.style.background = colors[i];
+      const [r,g,b] = Protocol.hexToRgb(colors[i]);
+      if (BLE.isConnected()) Protocol.rgb(i, r, g, b);
+    });
+    strip.appendChild(div);
+  }
+}
+buildStrip();
+
+document.getElementById('all-off').addEventListener('click', () => {
+  for (let i=0;i<4;i++){ colors[i] = '#000000'; }
+  buildStrip();
+  if (BLE.isConnected()) Protocol.rgbClear();
+});
+
+document.getElementById('all-apply').addEventListener('click', () => {
+  const v = document.getElementById('all-color').value;
+  for (let i=0;i<4;i++){ colors[i] = v; }
+  buildStrip();
+  const [r,g,b] = Protocol.hexToRgb(v);
+  if (BLE.isConnected()) Protocol.rgbAll(r, g, b);
+});
+
+const PRESETS = {
+  rainbow: ['#ff0000','#ffff00','#00ff00','#0080ff'],
+  red:     ['#ff0000','#ff0000','#ff0000','#ff0000'],
+  green:   ['#00ff00','#00ff00','#00ff00','#00ff00'],
+  blue:    ['#0040ff','#0040ff','#0040ff','#0040ff'],
+  warm:    ['#ff4000','#ff8000','#ffaa00','#ffcc00'],
+  ice:     ['#80c0ff','#a0d8ff','#c0e8ff','#e0f4ff'],
+};
+
+document.querySelectorAll('[data-preset]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const name = btn.dataset.preset;
+    const arr = PRESETS[name]; if (!arr) return;
+    for (let i=0;i<4;i++) colors[i] = arr[i];
+    buildStrip();
+    if (BLE.isConnected()) {
+      arr.forEach((hex, i) => {
+        const [r,g,b] = Protocol.hexToRgb(hex);
+        Protocol.rgb(i, r, g, b);
+      });
+    }
+  });
+});
+</script>
+</body>
+</html>

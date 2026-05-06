@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="paper">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LEDs · ESP32-C3 Lab</title>
+<link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-lab="leds" data-lab-title="💡 LEDs">
+
+<div class="lab-content">
+  <h2>D5 · D6 · D7 · D8</h2>
+  <p class="lab-desc">Toggle the four discrete status LEDs. Each click sends <code>LED:i,on</code>. Note: D5/D6 are wired to the same pin as motor A direction (GPIO 1), D7/D8 to motor B speed (GPIO 10) — they double as visual feedback when motors run.</p>
+
+  <div class="led-row" id="leds">
+    <!-- generated -->
+  </div>
+
+  <div class="preset-row">
+    <button id="all-on" class="primary">All on</button>
+    <button id="all-off">All off</button>
+    <button id="blink">Blink 3×</button>
+    <button id="chase">Chase</button>
+  </div>
+
+  <div class="alert warn">
+    <strong>// note</strong>
+    On the v3 board these aren't independently dimmable. The <code>LED:</code> command is implemented but the firmware ignores it when motors are active (to avoid flicker from the PWM). For RGB-style colour control, see the <a href="neopixels-lab.html">NeoPixels lab</a>.
+  </div>
+</div>
+
+<script src="../js/i18n.js"></script>
+<script src="../js/ble.js"></script>
+<script src="../js/protocol.js"></script>
+<script src="../js/ui.js"></script>
+<script src="../js/lab-shell.js"></script>
+
+<script>
+const LEDS = [
+  { name: 'D5', pin: 'GPIO 1', color: '#22c55e' },
+  { name: 'D6', pin: 'GPIO 1', color: '#22c55e' },
+  { name: 'D7', pin: 'GPIO 10', color: '#3b82f6' },
+  { name: 'D8', pin: 'GPIO 10', color: '#3b82f6' },
+];
+
+const state = [false, false, false, false];
+const container = document.getElementById('leds');
+
+function build() {
+  container.innerHTML = '';
+  LEDS.forEach((led, i) => {
+    const div = document.createElement('div');
+    div.className = 'led-item' + (state[i] ? ' on' : '');
+    div.style.color = led.color;
+    div.innerHTML = `
+      <div class="indicator" style="background:${state[i] ? led.color : ''}"></div>
+      <div class="name">${led.name}</div>
+      <div class="pin">${led.pin}</div>
+    `;
+    div.addEventListener('click', () => {
+      state[i] = !state[i];
+      build();
+      if (BLE.isConnected()) Protocol.led(i, state[i] ? 1 : 0);
+    });
+    container.appendChild(div);
+  });
+}
+build();
+
+document.getElementById('all-on').addEventListener('click', () => {
+  for (let i=0;i<4;i++) state[i] = true;
+  build();
+  if (BLE.isConnected()) for (let i=0;i<4;i++) Protocol.led(i, 1);
+});
+document.getElementById('all-off').addEventListener('click', () => {
+  for (let i=0;i<4;i++) state[i] = false;
+  build();
+  if (BLE.isConnected()) for (let i=0;i<4;i++) Protocol.led(i, 0);
+});
+
+document.getElementById('blink').addEventListener('click', async () => {
+  if (!BLE.isConnected()) return;
+  for (let n = 0; n < 3; n++) {
+    for (let i=0;i<4;i++){ state[i] = true; }
+    build();
+    for (let i=0;i<4;i++) Protocol.led(i, 1);
+    await new Promise(r => setTimeout(r, 250));
+    for (let i=0;i<4;i++){ state[i] = false; }
+    build();
+    for (let i=0;i<4;i++) Protocol.led(i, 0);
+    await new Promise(r => setTimeout(r, 250));
+  }
+});
+
+document.getElementById('chase').addEventListener('click', async () => {
+  if (!BLE.isConnected()) return;
+  for (let i=0;i<4;i++){ state[i] = false; }
+  build();
+  for (let i=0;i<4;i++) Protocol.led(i, 0);
+  for (let i = 0; i < 8; i++) {
+    const idx = i % 4;
+    state[idx] = true; build();
+    Protocol.led(idx, 1);
+    await new Promise(r => setTimeout(r, 150));
+    state[idx] = false; build();
+    Protocol.led(idx, 0);
+  }
+});
+</script>
+</body>
+</html>

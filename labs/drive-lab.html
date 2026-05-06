@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="paper">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Drive · ESP32-C3 Lab</title>
+<link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body data-lab="drive" data-lab-title="🕹️ Drive">
+
+<div class="lab-content">
+  <h2>Joystick</h2>
+  <p class="lab-desc">Drag the knob to drive. Speeds are sent as <code>M:left%,right%</code> with values clamped to <code>-100..100</code>. Release the knob to send <code>M:STOP</code>.</p>
+
+  <div class="joystick" id="joy" aria-label="virtual joystick">
+    <div class="axes"></div>
+    <div class="knob" id="knob"></div>
+  </div>
+
+  <div class="joy-readout">
+    <div>L: <span id="r-l">0</span></div>
+    <div>R: <span id="r-r">0</span></div>
+  </div>
+
+  <div class="preset-row">
+    <button id="preset-fwd">▲ FWD 50%</button>
+    <button id="preset-back">▼ BACK 50%</button>
+    <button id="preset-spinL">↺ Spin L</button>
+    <button id="preset-spinR">↻ Spin R</button>
+    <button id="preset-stop" class="primary">⏹ STOP</button>
+  </div>
+
+  <div class="alert">
+    <strong>// motor → wheel mapping</strong>
+    Left = TB6612FNG channel A (GPIO 1/2/3). Right = channel B (GPIO 6/7/10). Polarity depends on how you soldered the motor leads — flip the connector at J8 / J9 if a wheel goes backwards.
+  </div>
+</div>
+
+<script src="../js/i18n.js"></script>
+<script src="../js/ble.js"></script>
+<script src="../js/protocol.js"></script>
+<script src="../js/ui.js"></script>
+<script src="../js/lab-shell.js"></script>
+
+<script>
+/* ─── joystick math + send ─── */
+
+const joy   = document.getElementById('joy');
+const knob  = document.getElementById('knob');
+const rL    = document.getElementById('r-l');
+const rR    = document.getElementById('r-r');
+
+const SEND_INTERVAL_MS = 60;   // throttle TX
+let lastSent = 0;
+let lastL = 0, lastR = 0;
+let dragging = false;
+
+function setReadout(l, r) {
+  rL.textContent = String(l);
+  rR.textContent = String(r);
+}
+
+function sendMotors(l, r) {
+  const now = performance.now();
+  if (now - lastSent < SEND_INTERVAL_MS && l === lastL && r === lastR) return;
+  if (l === lastL && r === lastR) return;   // nothing to do
+  lastSent = now;
+  lastL = l; lastR = r;
+  if (BLE.isConnected()) Protocol.drive(l, r);
+}
+
+function fromTouch(e) {
+  const t = (e.touches && e.touches[0]) || e;
+  const r = joy.getBoundingClientRect();
+  const cx = r.left + r.width / 2;
+  const cy = r.top  + r.height / 2;
+  let dx = t.clientX - cx;
+  let dy = t.clientY - cy;
+  const radius = r.width / 2 - 35;          // half knob
+  const len = Math.hypot(dx, dy);
+  if (len > radius) { dx = dx / len * radius; dy = dy / len * radius; }
+  return { dx, dy, radius };
+}
+
+function update(e) {
+  const { dx, dy, radius } = fromTouch(e);
+  // place knob
+  knob.style.transform = `translate(${dx}px, ${dy}px)`;
+  // x = turn (-1 left, +1 right), y = throttle (-1 forward, +1 back); we invert dy so up=+
+  const x = dx / radius;   // -1..+1
+  const y = -dy / radius;  // -1..+1 (up = +)
+  // Differential drive: left = throttle + turn, right = throttle - turn
+  let l = (y + x) * 100;
+  let r = (y - x) * 100;
+  // clamp
+  l = Math.max(-100, Math.min(100, Math.round(l)));
+  r = Math.max(-100, Math.min(100, Math.round(r)));
+  setReadout(l, r);
+  sendMotors(l, r);
+}
+
+function reset() {
+  dragging = false;
+  joy.classList.remove('grabbing');
+  knob.style.transform = 'translate(0, 0)';
+  setReadout(0, 0);
+  if (BLE.isConnected() && (lastL !== 0 || lastR !== 0)) {
+    Protocol.stop();
+    lastL = 0; lastR = 0;
+  }
+}
+
+joy.addEventListener('mousedown', e => { dragging = true; joy.classList.add('grabbing'); update(e); });
+joy.addEventListener('touchstart', e => { dragging = true; joy.classList.add('grabbing'); update(e); }, {passive:true});
+
+window.addEventListener('mousemove', e => { if (dragging) update(e); });
+window.addEventListener('touchmove', e => { if (dragging) update(e); }, {passive:true});
+
+window.addEventListener('mouseup',   reset);
+window.addEventListener('touchend',  reset);
+window.addEventListener('touchcancel', reset);
+window.addEventListener('blur',      reset);
+
+/* ─── preset buttons ─── */
+
+document.getElementById('preset-fwd').addEventListener('click', () => {
+  setReadout(50, 50); if (BLE.isConnected()) Protocol.drive(50, 50);
+});
+document.getElementById('preset-back').addEventListener('click', () => {
+  setReadout(-50, -50); if (BLE.isConnected()) Protocol.drive(-50, -50);
+});
+document.getElementById('preset-spinL').addEventListener('click', () => {
+  setReadout(-60, 60); if (BLE.isConnected()) Protocol.drive(-60, 60);
+});
+document.getElementById('preset-spinR').addEventListener('click', () => {
+  setReadout(60, -60); if (BLE.isConnected()) Protocol.drive(60, -60);
+});
+document.getElementById('preset-stop').addEventListener('click', () => {
+  setReadout(0, 0); if (BLE.isConnected()) Protocol.stop();
+});
+
+/* keyboard arrows (bonus) */
+const KEY_PWR = 70;
+const heldKeys = {};
+function keyToTarget() {
+  let l=0, r=0;
+  if (heldKeys.ArrowUp)    { l += KEY_PWR; r += KEY_PWR; }
+  if (heldKeys.ArrowDown)  { l -= KEY_PWR; r -= KEY_PWR; }
+  if (heldKeys.ArrowLeft)  { l -= KEY_PWR/1.4; r += KEY_PWR/1.4; }
+  if (heldKeys.ArrowRight) { l += KEY_PWR/1.4; r -= KEY_PWR/1.4; }
+  l = Math.max(-100, Math.min(100, Math.round(l)));
+  r = Math.max(-100, Math.min(100, Math.round(r)));
+  return [l, r];
+}
+window.addEventListener('keydown', e => {
+  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
+    heldKeys[e.key] = true; e.preventDefault();
+    const [l, r] = keyToTarget(); setReadout(l, r);
+    if (BLE.isConnected()) Protocol.drive(l, r);
+  }
+});
+window.addEventListener('keyup', e => {
+  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
+    heldKeys[e.key] = false; e.preventDefault();
+    const [l, r] = keyToTarget(); setReadout(l, r);
+    if (BLE.isConnected()) {
+      if (l === 0 && r === 0) Protocol.stop();
+      else Protocol.drive(l, r);
+    }
+  }
+});
+</script>
+</body>
+</html>

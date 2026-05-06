@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="paper">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>v0.1 Plan — esp32c3-lab</title>
+<link rel="stylesheet" href="assets/styles.css">
+<style>
+/* Plan-page-specific styling — keeps the rest of styles.css clean */
+
+.plan-wrap { max-width: 920px; }
+
+.plan-header {
+  border-bottom: 1px solid var(--border);
+  padding: 24px 4px 16px;
+  margin-bottom: 18px;
+}
+.plan-header .eyebrow {
+  font: 600 11px 'JetBrains Mono', ui-monospace, monospace;
+  color: var(--text-muted);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  margin: 0 0 6px;
+}
+.plan-header h1 {
+  font: 700 26px/1.15 'Inter', system-ui, sans-serif;
+  color: var(--text);
+  margin: 0 0 4px;
+}
+.plan-header .summary {
+  font-size: 14px; color: var(--text-muted);
+  line-height: 1.55;
+  max-width: 680px;
+}
+
+.status-banner {
+  background: color-mix(in srgb, var(--warn) 14%, transparent);
+  border-left: 3px solid var(--warn);
+  padding: 12px 14px;
+  border-radius: 0 8px 8px 0;
+  margin: 14px 0 22px;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.status-banner strong {
+  display: block;
+  font: 700 11px 'JetBrains Mono', ui-monospace, monospace;
+  color: var(--warn);
+  letter-spacing: .04em;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+/* TOC */
+.toc {
+  display: grid; gap: 6px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin: 0 0 24px;
+}
+.toc h3 {
+  grid-column: 1 / -1;
+  font: 700 11px 'JetBrains Mono', ui-monospace, monospace;
+  color: var(--text-muted);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin: 0 0 4px;
+}
+.toc a {
+  display: block;
+  font-size: 13px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  text-decoration: none;
+  color: var(--text);
+}
+.toc a:hover { background: var(--panel-2); color: var(--accent); text-decoration: none; }
+.toc a .num {
+  font: 700 10px 'JetBrains Mono', ui-monospace, monospace;
+  color: var(--text-muted);
+  margin-right: 8px;
+}
+
+section.plan-section {
+  margin: 30px 0;
+  scroll-margin-top: 16px;
+}
+section.plan-section > h2 {
+  font: 700 19px 'Inter', system-ui, sans-serif;
+  color: var(--accent);
+  margin: 0 0 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+section.plan-section > h2 .num {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-right: 8px;
+  font-weight: 500;
+}
+section.plan-section > h3 {
+  font: 700 14px 'Inter', system-ui, sans-serif;
+  color: var(--text);
+  margin: 18px 0 6px;
+}
+section.plan-section p { margin: 8px 0; line-height: 1.6; }
+section.plan-section ul { margin: 8px 0; padding-left: 20px; line-height: 1.6; }
+section.plan-section li { margin-bottom: 4px; }
+
+/* Tables */
+table.plan {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 13px;
+}
+table.plan th, table.plan td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+table.plan th {
+  font: 700 11px 'JetBrains Mono', ui-monospace, monospace;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+table.plan tr:hover td { background: color-mix(in srgb, var(--accent) 5%, transparent); }
+table.plan code { font-size: 12px; }
+
+/* Code block */
+pre.code {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin: 10px 0;
+  font: 11.5px/1.5 'JetBrains Mono', ui-monospace, monospace;
+  overflow-x: auto;
+  color: var(--text);
+}
+pre.code .c { color: var(--text-muted); }
+pre.code .k { color: var(--accent); font-weight: 600; }
+
+/* Lab list item */
+.lab-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px;
+  margin: 12px 0;
+}
+.lab-list .lab-item {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.lab-list .lab-item h4 {
+  font: 700 13px 'Inter', system-ui, sans-serif;
+  color: var(--accent);
+  margin: 0 0 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.lab-list .lab-item h4 .icon { font-size: 18px; }
+.lab-list .lab-item p {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0 0 4px;
+  line-height: 1.5;
+}
+.lab-list .lab-item code {
+  font-size: 11px;
+}
+
+/* Q&A list */
+.q-list { counter-reset: q; padding: 0; list-style: none; }
+.q-list li {
+  counter-increment: q;
+  position: relative;
+  padding: 10px 12px 10px 50px;
+  background: var(--panel-2);
+  border-radius: 8px;
+  margin: 6px 0;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.q-list li::before {
+  content: counter(q);
+  position: absolute;
+  left: 12px; top: 10px;
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--accent);
+  color: var(--bg);
+  border-radius: 50%;
+  font: 700 11px 'JetBrains Mono', ui-monospace, monospace;
+}
+.q-list li .default {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.q-list li .default em { color: var(--accent); font-weight: 600; font-style: normal; }
+
+/* Decision row */
+.decision {
+  display: flex; gap: 10px; flex-wrap: wrap;
+  margin: 16px 0;
+}
+.decision a, .decision button {
+  font: 600 13px 'Inter', system-ui, sans-serif;
+  padding: 10px 18px;
+  border-radius: 8px;
+  text-decoration: none;
+}
+.decision .go {
+  background: var(--accent);
+  color: var(--bg);
+  border: 1px solid var(--accent);
+}
+.decision .stop {
+  background: var(--panel);
+  color: var(--err);
+  border: 1px solid var(--err);
+}
+</style>
+</head>
+
+<body>
+
+<div class="app plan-wrap">
+
+  <!-- ═══════ HEADER ═══════ -->
+  <header class="top">
+    <h1 class="title">
+      esp32c3-lab
+      <span class="subtitle">v0.1 plan</span>
+    </h1>
+    <div class="top-actions">
+      <select class="picker" id="theme-pick" aria-label="theme">
+        <option value="paper">📄 paper</option>
+        <option value="steel">⚙️ steel</option>
+        <option value="forest">🌿 forest</option>
+        <option value="carbon">🖤 carbon</option>
+      </select>
+    </div>
+  </header>
+
+  <div class="plan-header">
+    <p class="eyebrow">PLAN · NO CODE YET</p>
+    <h1>Minimal clone of <a href="https://github.com/abourdim/maqueen-lab" target="_blank" rel="noopener">maqueen-lab</a> for the ESP32-C3 SuperMini</h1>
+    <p class="summary">Six labs (drive · servo · leds · neopixels · distance · buzzer), Web Bluetooth over Nordic UART Service, same command vocabulary as maqueen. Hardware ground-truth: Robot-01 v3 schematic. Standalone repo, GitHub Pages.</p>
+  </div>
+
+  <div class="status-banner">
+    <strong>// status</strong>
+    Planning. <strong>One</strong> file already on disk: <code>assets/styles.css</code> (the styles for this very page). If the plan is rejected, that file is the only cleanup. Reply <code>go</code> to build the rest in the order in §&nbsp;11.
+  </div>
+
+  <!-- ═══════ TOC ═══════ -->
+  <nav class="toc" aria-label="Sections">
+    <h3>Sections</h3>
+    <a href="#goals"><span class="num">1</span>Goals</a>
+    <a href="#protocol"><span class="num">2</span>BLE protocol</a>
+    <a href="#mapping"><span class="num">3</span>Firmware mapping</a>
+    <a href="#tree"><span class="num">4</span>File tree</a>
+    <a href="#labs"><span class="num">5</span>Lab specs</a>
+    <a href="#ui"><span class="num">6</span>UI conventions</a>
+    <a href="#caveats"><span class="num">7</span>Hardware caveats</a>
+    <a href="#build"><span class="num">8</span>Build &amp; deploy</a>
+    <a href="#deferred"><span class="num">9</span>Out of scope</a>
+    <a href="#questions"><span class="num">10</span>Open questions</a>
+    <a href="#proceed"><span class="num">11</span>How to proceed</a>
+  </nav>
+
+  <!-- ═══════ § 1 GOALS ═══════ -->
+  <section class="plan-section" id="goals">
+    <h2><span class="num">§ 1</span>Goals</h2>
+    <ul>
+      <li><strong>6 labs</strong> — same set &amp; names as maqueen-lab's primary capabilities: <code>drive · servo · leds · neopixels · distance · buzzer</code>.</li>
+      <li><strong>BLE</strong> transport using <strong>Nordic UART Service (NUS)</strong> — same UUIDs, same chunking (20-byte MTU), same line-based ASCII protocol.</li>
+      <li><strong>Same command vocabulary</strong> as maqueen-lab (<code>M:</code>, <code>SRV:</code>, <code>LED:</code>, <code>RGB:</code>, <code>BUZZ:</code>, <code>DIST:</code>) so any maqueen lab page that doesn't depend on micro:bit-specific surfaces (matrix, A/B button) is portable with near-zero JS changes.</li>
+      <li>Standalone repo at <code>github.com/abourdim/esp32c3-lab</code>, public, GitHub Pages auto-deploy.</li>
+    </ul>
+  </section>
+
+  <!-- ═══════ § 2 PROTOCOL ═══════ -->
+  <section class="plan-section" id="protocol">
+    <h2><span class="num">§ 2</span>BLE protocol — copied from maqueen-lab</h2>
+
+    <h3>Service / characteristics</h3>
+    <table class="plan">
+      <tr><th></th><th>UUID</th></tr>
+      <tr><td><strong>Service</strong> (Nordic UART)</td><td><code>6e400001-b5a3-f393-e0a9-e50e24dcca9e</code></td></tr>
+      <tr><td><strong>TX (write)</strong> — browser → device</td><td><code>6e400002-…</code></td></tr>
+      <tr><td><strong>RX (notify)</strong> — device → browser</td><td><code>6e400003-…</code></td></tr>
+    </table>
+    <p style="font-size:13px;color:var(--text-muted)">ESP32-C3 firmware uses NimBLE-Arduino. Browser uses Web Bluetooth (<code>navigator.bluetooth.requestDevice</code>). <strong>Chrome / Edge only.</strong></p>
+
+    <h3>Wire format</h3>
+    <p>Plain ASCII, lines terminated by <code>\n</code>. Long lines chunked at 20-byte BLE MTU.</p>
+
+    <h4 style="font-size:12px;color:var(--text-muted);margin:14px 0 4px;letter-spacing:.04em;text-transform:uppercase">TX → device</h4>
+<pre class="code"><span class="k">M:</span>80,80          <span class="c">← drive motors (left%, right%) [-100..100]</span>
+<span class="k">M:</span>STOP           <span class="c">← halt motors</span>
+<span class="k">SRV:</span>1,90         <span class="c">← servo (index 1..2, angle 0..180)</span>
+<span class="k">SWEEP:</span>1,0,180,1500 <span class="c">← sweep servo i from a to b over T ms</span>
+<span class="k">LED:</span>1,1          <span class="c">← simple LED (index 0..3, 0=off / 1=on)</span>
+<span class="k">RGB:</span>0,255,0,0    <span class="c">← NeoPixel set (idx, r, g, b)</span>
+<span class="k">RGB:</span>ALL,0,128,0  <span class="c">← all 4 NeoPixels green</span>
+<span class="k">RGB:</span>CLEAR        <span class="c">← all off</span>
+<span class="k">BUZZ:</span>440,200     <span class="c">← play freq Hz for duration ms</span>
+<span class="k">BUZZ:</span>OFF         <span class="c">← stop tone</span>
+<span class="k">DIST:</span>?           <span class="c">← request a single ultrasonic reading</span>
+<span class="k">STREAM:</span>on        <span class="c">← enable telemetry streaming</span>
+<span class="k">STREAM:</span>off       <span class="c">← disable</span>
+<span class="k">HELLO</span>            <span class="c">← (built-in) firmware replies HELLO:&lt;version&gt;</span>
+<span class="k">FW:</span>?             <span class="c">← (built-in) firmware replies FW:&lt;version&gt;,&lt;caps&gt;</span></pre>
+
+    <h4 style="font-size:12px;color:var(--text-muted);margin:14px 0 4px;letter-spacing:.04em;text-transform:uppercase">RX ← device</h4>
+<pre class="code"><span class="k">INFO:</span>CONNECTED   <span class="c">← greeting</span>
+<span class="k">HELLO:</span>0.1.0      <span class="c">← reply to HELLO</span>
+<span class="k">FW:</span>0.1.0,M+S+L+R+B+D <span class="c">← capabilities</span>
+<span class="k">DIST:</span>37          <span class="c">← distance in cm; "-" = no reading</span>
+<span class="k">DIST:</span>-
+<span class="k">ECHO:</span>&lt;seq&gt; &lt;verb&gt; <span class="c">← echo of the command (sequenced)</span>
+<span class="k">ERR:</span>&lt;seq&gt; &lt;reason&gt;
+<span class="k">BTN:</span>1            <span class="c">← SW1 (GPIO 0) pressed (only if STREAM:on)</span>
+<span class="k">BTN:</span>0            <span class="c">← released</span>
+<span class="k">BATT:</span>3.86        <span class="c">← battery voltage update</span></pre>
+
+    <h3>Sequencing &amp; echo (optional, maqueen pattern)</h3>
+    <p>If a TX line begins with a sequence number followed by space — <code>12 M:80,80</code> — firmware echoes <code>ECHO:12 M:80,80</code>. Browser uses this to confirm delivery. <code>js/ble-scheduler.js</code> from maqueen handles this; we replicate. Off by default in v0.1 (fire-and-forget).</p>
+  </section>
+
+  <!-- ═══════ § 3 FIRMWARE MAPPING ═══════ -->
+  <section class="plan-section" id="mapping">
+    <h2><span class="num">§ 3</span>Firmware mapping (maqueen verb → Robot-01 hardware)</h2>
+    <p>Per v3 schematic. <strong>Same maqueen command, different physical pins.</strong></p>
+
+    <table class="plan">
+      <thead>
+        <tr><th>Verb</th><th>Maqueen action (micro:bit)</th><th>Robot-01 action (ESP32-C3)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>M:left,right</code></td><td>I²C 0x10 motor regs</td><td>TB6612FNG: AIN1/AIN2/PWMA (GPIO 1/2/3) for left, BIN1/BIN2/PWMB (GPIO 6/7/10) for right</td></tr>
+        <tr><td><code>M:STOP</code></td><td>both = 0</td><td>brake both motors</td></tr>
+        <tr><td><code>SRV:i,angle</code></td><td>I²C 0x14 / 0x15 (S1/S2)</td><td>LEDC PWM 50 Hz on GPIO 6 (J4 = servo 1) or GPIO 10 (J5 = servo 2) ⚠ shares pins with motor B — see §&nbsp;7</td></tr>
+        <tr><td><code>LED:i,on</code></td><td>digital P8 / P12</td><td>discrete LEDs D5–D8 (GPIO 1, 10) — note: shared with motor pins</td></tr>
+        <tr><td><code>RGB:i,r,g,b</code></td><td>I²C 0x32 register</td><td>FastLED on GPIO 5 → onboard NeoPixel chain D1→D2→D3→D4</td></tr>
+        <tr><td><code>RGB:ALL,r,g,b</code></td><td>broadcast</td><td><code>fill_solid()</code></td></tr>
+        <tr><td><code>BUZZ:f,ms</code></td><td><code>music.playTone()</code> on P0</td><td><code>ledcWriteTone()</code> on GPIO 4 (transistor stage)</td></tr>
+        <tr><td><code>BUZZ:OFF</code></td><td><code>music.stopAllSounds()</code></td><td><code>ledcWrite(0)</code></td></tr>
+        <tr><td><code>DIST:?</code></td><td>sonarbit P1/P2</td><td><code>pulseIn(ECHO)</code> after pulse on TRIG, J6 (GPIO 20/21)</td></tr>
+        <tr><td><code>STREAM:on/off</code></td><td>periodic broadcast</td><td>100 ms loop posting BTN/BATT</td></tr>
+        <tr><td><code>HELLO</code> / <code>FW:?</code></td><td>reply with version</td><td>reply with <code>0.1.0</code> + caps string</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ═══════ § 4 FILE TREE ═══════ -->
+  <section class="plan-section" id="tree">
+    <h2><span class="num">§ 4</span>File tree (~22 files)</h2>
+<pre class="code">esp32c3-lab/
+├── README.md                     <span class="c">← overview · live URL · quick start</span>
+├── PLAN.md / plan.html           <span class="c">← this plan (md + html)</span>
+├── package.json                  <span class="c">← npm run serve wraps tools/serve.py</span>
+├── manifest.json                 <span class="c">← PWA manifest</span>
+├── sw.js                         <span class="c">← minimal offline-cache service worker</span>
+├── .gitignore  ·  .nojekyll      <span class="c">← repo housekeeping</span>
+├── index.html                    <span class="c">← landing — 6 lab cards, connect, theme/lang pickers</span>
+├── assets/
+│   └── <strong>styles.css</strong>                <span class="c">← ✅ ALREADY WRITTEN — 4 themes + UI components</span>
+├── js/
+│   ├── ble.js                    <span class="c">← Web Bluetooth NUS — connect, write, notify, reconnect</span>
+│   ├── ble-scheduler.js          <span class="c">← serializes writes; seq# / echo</span>
+│   ├── protocol.js               <span class="c">← high-level senders: drive(l,r), servo(i,a), led(i,s)…</span>
+│   ├── lab-shell.js              <span class="c">← injects shared chrome (header, status pill, log)</span>
+│   ├── i18n.js                   <span class="c">← EN / FR / AR strings; RTL toggle on AR</span>
+│   └── ui.js                     <span class="c">← theme picker, lang picker, status pill, log scroll</span>
+├── labs/
+│   ├── drive-lab.html            <span class="c">← virtual joystick → M:left,right</span>
+│   ├── servo-lab.html            <span class="c">← two sliders → SRV:1,a / SRV:2,a + sweep</span>
+│   ├── leds-lab.html             <span class="c">← four toggles for D5–D8 → LED:i,s</span>
+│   ├── neopixels-lab.html        <span class="c">← four colour pickers → RGB:i,r,g,b</span>
+│   ├── distance-lab.html         <span class="c">← live bar + numeric, polls DIST:? at 5 Hz</span>
+│   └── buzzer-lab.html           <span class="c">← piano keys + freq/duration sliders → BUZZ:f,ms</span>
+├── firmware/
+│   ├── esp32c3-lab.ino           <span class="c">← Arduino sketch — NimBLE NUS server + parser</span>
+│   ├── platformio.ini            <span class="c">← pinned platform 6.7.0 + libs</span>
+│   └── README.md                 <span class="c">← wiring · flashing · troubleshooting</span>
+├── tools/
+│   └── serve.py                  <span class="c">← Python stdlib http.server → :8000</span>
+├── serve.bat / serve.sh          <span class="c">← launchers</span>
+└── .github/workflows/
+    └── pages.yml                 <span class="c">← deploy → gh-pages</span></pre>
+  </section>
+
+  <!-- ═══════ § 5 LABS ═══════ -->
+  <section class="plan-section" id="labs">
+    <h2><span class="num">§ 5</span>Lab pages — one-line spec each</h2>
+
+    <div class="lab-list">
+      <div class="lab-item">
+        <h4><span class="icon">🕹️</span> drive-lab</h4>
+        <p>Round joystick (drag/tap) + STOP button</p>
+        <p>TX: <code>M:l,r</code> throttled 50 ms · <code>M:STOP</code> on release</p>
+      </div>
+      <div class="lab-item">
+        <h4><span class="icon">⚙️</span> servo-lab</h4>
+        <p>Two sliders + presets (0° / 90° / 180° / sweep)</p>
+        <p>TX: <code>SRV:i,a</code> · <code>SWEEP:i,a,b,t</code></p>
+      </div>
+      <div class="lab-item">
+        <h4><span class="icon">💡</span> leds-lab</h4>
+        <p>4 toggle cards for D5–D8 + all-on/all-off</p>
+        <p>TX: <code>LED:i,1</code> / <code>LED:i,0</code></p>
+      </div>
+      <div class="lab-item">
+        <h4><span class="icon">🌈</span> neopixels-lab</h4>
+        <p>4 colour pickers + ALL/CLEAR + 6 preset palettes</p>
+        <p>TX: <code>RGB:i,r,g,b</code> · <code>RGB:ALL,r,g,b</code> · <code>RGB:CLEAR</code></p>
+      </div>
+      <div class="lab-item">
+        <h4><span class="icon">📡</span> distance-lab</h4>
+        <p>Big numeric (cm) + horizontal bar + sparkline</p>
+        <p>TX: <code>DIST:?</code> polled 5 Hz · RX: <code>DIST:&lt;n&gt;</code> / <code>DIST:-</code></p>
+      </div>
+      <div class="lab-item">
+        <h4><span class="icon">🎹</span> buzzer-lab</h4>
+        <p>Piano (C-D-E-F-G-A-B-C) + freq/duration sliders</p>
+        <p>TX: <code>BUZZ:f,ms</code> · <code>BUZZ:OFF</code></p>
+      </div>
+    </div>
+
+    <p>Every lab inherits from <code>lab-shell.js</code>: top header (title, back link, theme/lang pickers, status pill), right rail (or bottom on mobile) with TX/RX <strong>Message Log</strong>, BLE state banner.</p>
+  </section>
+
+  <!-- ═══════ § 6 UI ═══════ -->
+  <section class="plan-section" id="ui">
+    <h2><span class="num">§ 6</span>UI conventions</h2>
+    <ul>
+      <li><strong>4 themes:</strong> <code>paper</code> (default, kid-friendly cream), <code>steel</code> (pro dark), <code>forest</code> (calm green), <code>carbon</code> (cyberpunk). <em>Try the picker top-right of this page.</em></li>
+      <li><strong>3 languages:</strong> EN / FR / AR with <strong>RTL</strong> layout on AR.</li>
+      <li><strong>Status pill:</strong> red dot = disconnected, green pulsing = connected.</li>
+      <li><strong>Message log:</strong> timestamps + colour by type (TX = blue, RX = green, ERR = red, INFO = grey). Clear / Copy buttons.</li>
+      <li><strong>PWA:</strong> installable from desktop or mobile. SW caches the app shell + js + css for offline use.</li>
+    </ul>
+  </section>
+
+  <!-- ═══════ § 7 CAVEATS ═══════ -->
+  <section class="plan-section" id="caveats">
+    <h2><span class="num">§ 7</span>Hardware caveats (need to acknowledge)</h2>
+    <ol>
+      <li><strong>Servo / motor pin sharing</strong> — J4 (GPIO 6) and J5 (GPIO 10) host both TB6612FNG <code>BIN1</code>/<code>PWMB</code> AND the servo headers. Cannot drive motor B AND a servo at the same time. Firmware enters one of two modes at boot, selectable via <code>MODE:motors</code> or <code>MODE:servos</code> (default: motors).</li>
+      <li><strong>GPIO 3 = PWMA + J3</strong> — same pin drives motor A speed AND any device plugged into J3. Don't plug servos into J3 if you also want motor A.</li>
+      <li><strong>GPIO 8/9 = I²C</strong> — used by OLED in v3 board. Lab firmware doesn't drive the OLED yet.</li>
+      <li><strong>GPIO 0 = SW1</strong> — read by firmware, broadcast as <code>BTN:1/0</code> events.</li>
+      <li><strong>Battery monitoring</strong> — no ADC pin wired in v3; firmware returns stub <code>BATT:?</code> in v0.1. v0.2 needs a battery divider on a free GPIO.</li>
+    </ol>
+  </section>
+
+  <!-- ═══════ § 8 BUILD ═══════ -->
+  <section class="plan-section" id="build">
+    <h2><span class="num">§ 8</span>Build / deploy</h2>
+    <table class="plan">
+      <tr><th>Step</th><th>Command</th></tr>
+      <tr><td>Local serve</td><td><code>./serve.sh</code> (or <code>serve.bat</code>) → <code>http://localhost:8000</code></td></tr>
+      <tr><td>Flash firmware</td><td>Arduino IDE OR <code>pio run -t upload</code></td></tr>
+      <tr><td>Push</td><td><code>git push</code> → GitHub Action mirrors to <code>gh-pages</code></td></tr>
+      <tr><td>Live</td><td><code>https://abourdim.github.io/esp32c3-lab/</code></td></tr>
+    </table>
+  </section>
+
+  <!-- ═══════ § 9 OUT OF SCOPE ═══════ -->
+  <section class="plan-section" id="deferred">
+    <h2><span class="num">§ 9</span>Out of v0.1 (deferred to v0.2+)</h2>
+    <ul>
+      <li>Cockpit Lab (skeuomorphic dashboards)</li>
+      <li>Living Twin (cartoon mirror page)</li>
+      <li>Voice Tour, Mission Mode, confetti</li>
+      <li>Workshops/ printable PDFs</li>
+      <li>Playwright tests</li>
+      <li>IR receiver, line sensors (no IR hardware on v3 schematic)</li>
+      <li>A/B button matrix (micro:bit-specific, no equivalent on the C3 board)</li>
+      <li>OLED status mirroring</li>
+      <li>I²C addon discovery (<code>ADDON:LIST</code>)</li>
+      <li>Battery level (needs a hardware revision with an ADC divider)</li>
+      <li>5×5 LED matrix (<code>CMD:</code> and <code>LM:</code> verbs from maqueen) — not on this hardware</li>
+    </ul>
+  </section>
+
+  <!-- ═══════ § 10 QUESTIONS ═══════ -->
+  <section class="plan-section" id="questions">
+    <h2><span class="num">§ 10</span>Open questions for you to confirm</h2>
+    <ol class="q-list">
+      <li><strong>Default theme</strong> — <code>paper</code> (light, classroom-ready) or <code>steel</code> (dark, workshop-ready)?
+        <span class="default">Default chosen: <em>paper</em>.</span></li>
+      <li><strong>App title shown in the header</strong> — <code>ESP32-C3 Lab</code> or <code>Robot-01 Lab</code> or something else?
+        <span class="default">Default chosen: <em>ESP32-C3 Lab</em>.</span></li>
+      <li><strong>Sequence numbers</strong> — every TX gets a <code>&lt;seq&gt;</code> prefix and waits for <code>ECHO:&lt;seq&gt;</code> before sending the next, OR fire-and-forget for v0.1?
+        <span class="default">Default chosen: <em>fire-and-forget</em>. Sequencing infra in <code>ble-scheduler.js</code> is wired but disabled.</span></li>
+      <li><strong>Servo / motor mode</strong> — does the firmware ship in motor mode by default (servos won't respond on J4/J5 until <code>MODE:servos</code>), or detect at runtime?
+        <span class="default">Default chosen: <em>motor mode at boot</em>. Servo lab issues <code>MODE:servos</code> on first SRV: command.</span></li>
+      <li><strong>GitHub repo</strong> — create <code>github.com/abourdim/esp32c3-lab</code> (public, gh-pages on master) on first push?
+        <span class="default">Default chosen: <em>yes, public</em>.</span></li>
+    </ol>
+  </section>
+
+  <!-- ═══════ § 11 PROCEED ═══════ -->
+  <section class="plan-section" id="proceed">
+    <h2><span class="num">§ 11</span>How to proceed</h2>
+    <p>Reply with:</p>
+    <ul>
+      <li><strong><code>go</code></strong> — I build files in this exact order and push:
+        <ol style="margin-top:6px">
+          <li>firmware sketch + platformio.ini</li>
+          <li>js/ble.js + ble-scheduler.js + protocol.js</li>
+          <li>js/lab-shell.js + i18n.js + ui.js</li>
+          <li>index.html</li>
+          <li>6 labs in order: drive · neopixels · distance · buzzer · leds · servo</li>
+          <li>PWA bits (manifest, sw, .nojekyll)</li>
+          <li>tools/serve.py + launchers</li>
+          <li>README + .gitignore + workflow</li>
+          <li><code>git init</code> · <code>gh repo create</code> · push · verify live URL</li>
+        </ol>
+      </li>
+      <li><strong><code>go but X</code></strong> — tweak (e.g. <code>go but only 3 labs first</code>, <code>go but steel default</code>, <code>go but no PWA</code>)</li>
+      <li><strong><code>stop</code></strong> — discard the plan and the one written file</li>
+      <li>questions — I'll answer without writing code</li>
+    </ul>
+  </section>
+
+  <footer class="app-footer">
+    plan v0.1 · esp32c3-lab · adapted from <a href="https://github.com/abourdim/maqueen-lab" target="_blank" rel="noopener">maqueen-lab</a> · 2026-05-06
+  </footer>
+</div>
+
+<script>
+/* Theme picker — saves to localStorage so the choice survives navigations */
+const themeKey = 'esp32c3-lab-theme';
+const pick = document.getElementById('theme-pick');
+const saved = (function () {
+  try { return localStorage.getItem(themeKey); } catch { return null; }
+})() || 'paper';
+document.documentElement.dataset.theme = saved;
+pick.value = saved;
+pick.addEventListener('change', () => {
+  document.documentElement.dataset.theme = pick.value;
+  try { localStorage.setItem(themeKey, pick.value); } catch {}
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "esp32c3-lab",
+  "version": "0.1.0",
+  "description": "BLE-driven labs for the ESP32-C3 SuperMini robot — drive, servo, leds, neopixels, distance, buzzer.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "serve": "python tools/serve.py",
+    "serve:8080": "python tools/serve.py 8080"
+  },
+  "homepage": "https://abourdim.github.io/esp32c3-lab/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/abourdim/esp32c3-lab.git"
+  },
+  "license": "MIT"
+}

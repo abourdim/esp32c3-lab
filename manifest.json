@@ -1,0 +1,15 @@
+{
+  "name": "ESP32-C3 Lab",
+  "short_name": "esp32c3-lab",
+  "description": "BLE-driven labs for the ESP32-C3 SuperMini robot.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "theme_color": "#d0021b",
+  "background_color": "#fafaf7",
+  "orientation": "any",
+  "icons": [
+    { "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%23d0021b'/%3E%3Ctext x='96' y='130' font-size='110' text-anchor='middle' fill='white' font-family='monospace' font-weight='700'%3EC3%3C/text%3E%3C/svg%3E", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%23d0021b'/%3E%3Ctext x='256' y='340' font-size='280' text-anchor='middle' fill='white' font-family='monospace' font-weight='700'%3EC3%3C/text%3E%3C/svg%3E", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="paper">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ESP32-C3 Lab</title>
+<meta name="description" content="BLE-driven labs for the ESP32-C3 SuperMini robot — drive, servo, leds, neopixels, distance, buzzer.">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#d0021b">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+
+<body>
+
+<div class="app">
+
+  <header class="top">
+    <h1 class="title" data-i18n="title">ESP32-C3 Lab <span class="subtitle" data-i18n="subtitle">BLE-driven labs for Robot-01</span></h1>
+    <div class="top-actions">
+      <select class="picker" id="theme-pick" aria-label="theme">
+        <option value="paper">📄 paper</option>
+        <option value="steel">⚙️ steel</option>
+        <option value="forest">🌿 forest</option>
+        <option value="carbon">🖤 carbon</option>
+      </select>
+      <select class="picker" id="lang-pick" aria-label="language">
+        <option value="en">EN</option>
+        <option value="fr">FR</option>
+        <option value="ar">AR</option>
+      </select>
+      <span class="status-pill" id="status-pill"><span class="dot"></span><span class="status-text" data-i18n="disconnected">Disconnected</span></span>
+      <button id="connect-btn" class="primary" data-i18n="connect">Connect</button>
+    </div>
+  </header>
+
+  <p class="intro" data-i18n="intro">
+    Six single-purpose labs that talk to your Robot-01 over Web Bluetooth (Nordic UART). Pick one below.
+  </p>
+
+  <div class="alert warn">
+    <strong>// browser support</strong>
+    <span data-i18n="browser_warn">Heads-up: BLE works in Chrome / Edge only. Firefox + Safari can't do Web Bluetooth.</span>
+  </div>
+
+  <!-- ═══ 6 LAB CARDS ═══ -->
+  <div class="lab-grid">
+
+    <a class="lab-card" href="labs/drive-lab.html">
+      <span class="icon">🕹️</span>
+      <h2 data-i18n="lab_drive">Drive</h2>
+      <p data-i18n="lab_drive_desc">Joystick → motors. Forward, back, turn, pivot.</p>
+    </a>
+
+    <a class="lab-card" href="labs/servo-lab.html">
+      <span class="icon">⚙️</span>
+      <h2 data-i18n="lab_servo">Servo</h2>
+      <p data-i18n="lab_servo_desc">Sliders + sweep. Plug servos into J4 / J5.</p>
+    </a>
+
+    <a class="lab-card" href="labs/leds-lab.html">
+      <span class="icon">💡</span>
+      <h2 data-i18n="lab_leds">LEDs</h2>
+      <p data-i18n="lab_leds_desc">Toggle the 4 status LEDs (D5–D8).</p>
+    </a>
+
+    <a class="lab-card" href="labs/neopixels-lab.html">
+      <span class="icon">🌈</span>
+      <h2 data-i18n="lab_neopixels">NeoPixels</h2>
+      <p data-i18n="lab_neopixels_desc">Color the 4 onboard RGB pixels (D1–D4).</p>
+    </a>
+
+    <a class="lab-card" href="labs/distance-lab.html">
+      <span class="icon">📡</span>
+      <h2 data-i18n="lab_distance">Distance</h2>
+      <p data-i18n="lab_distance_desc">Live ultrasonic reading (HC-SR04 on J6).</p>
+    </a>
+
+    <a class="lab-card" href="labs/buzzer-lab.html">
+      <span class="icon">🎹</span>
+      <h2 data-i18n="lab_buzzer">Buzzer</h2>
+      <p data-i18n="lab_buzzer_desc">Piano + freq slider for the on-board piezo.</p>
+    </a>
+
+  </div>
+
+  <footer class="app-footer">
+    esp32c3-lab v0.1 · <a href="https://github.com/abourdim/esp32c3-lab" target="_blank" rel="noopener">github</a> · <a href="plan.html">plan</a> · adapted from <a href="https://github.com/abourdim/maqueen-lab" target="_blank" rel="noopener">maqueen-lab</a>
+  </footer>
+</div>
+
+<script src="js/i18n.js"></script>
+<script src="js/ble.js"></script>
+<script src="js/protocol.js"></script>
+<script src="js/ui.js"></script>
+<script>UI.init();</script>
+
+<!-- Service worker -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
