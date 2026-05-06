@@ -433,38 +433,35 @@ void setup() {
 
   svc->start();
 
-  // ── Advertisement packet engineering ──────────────────────────
-  // BLE 4.x advertisement payload is 31 bytes max. The 128-bit NUS
-  // service UUID alone is 16 + 2 = 18 bytes. The name 'esp32c3-lab'
-  // is 11 + 2 = 13 bytes. Plus flags (3 bytes), the two together
-  // exceed 31 bytes — NimBLE's default builder pushes the LATER-added
-  // field (the name) into the scan-response packet. On Windows,
-  // Chrome's Web Bluetooth filter doesn't reliably read scan-response
-  // data, so a `namePrefix: 'esp32c3'` filter never matches.
-  //
-  // Fix: explicitly construct both packets.
-  //   - Primary advertisement = flags + name only (compact, ~16 bytes)
-  //   - Scan response          = the 128-bit service UUID
-  // The browser sees 'esp32c3-lab' in the primary scan, the namePrefix
-  // filter matches, and after pairing the NUS service is still
-  // discoverable via getPrimaryService().
+  // ── Advertisement — simplest possible, name only ──────────────
+  // The 128-bit NUS UUID + 'esp32c3-lab' name doesn't fit in BLE 4.x's
+  // 31-byte adv packet. Putting the UUID in scan response works on
+  // most stacks but not reliably on Windows. Compromise: name only in
+  // adv, no service UUID anywhere in the broadcast. Browser's
+  // namePrefix:'esp32c3' filter matches; the NUS service is still
+  // discoverable post-pair via getPrimaryService(). Trade-off: BLE
+  // scanners that filter solely by service UUID won't find us, but
+  // the browser API does name-based discovery just fine.
 
   NimBLEAdvertising *adv = NimBLEDevice::getAdvertising();
+  adv->setName("esp32c3-lab");
+  bool advStarted = adv->start();
 
-  NimBLEAdvertisementData advData;
-  advData.setName("esp32c3-lab");
-  advData.setFlags(BLE_HS_ADV_F_DISC_GEN | BLE_HS_ADV_F_BREDR_UNSUP);
-  adv->setAdvertisementData(advData);
-
-  NimBLEAdvertisementData scanData;
-  scanData.setCompleteServices(NimBLEUUID(NUS_SERVICE_UUID));
-  adv->setScanResponseData(scanData);
-
-  // NB: don't set MinInterval/MaxInterval below 0x20 (20 ms). The BLE
-  // spec rejects faster intervals for undirected advertising and NimBLE
-  // silently refuses to start. NimBLE's defaults (~100 ms) are fine.
-
-  adv->start();
+  // ── Visual diagnostic — chip tells us its BLE state on boot ──
+  // Without USB-CDC serial output (see BUG-012c forensic), we have no
+  // other way to know if init actually succeeded. The NeoPixels
+  // become our debug LED.
+  //   GREEN  for ~1 sec  → adv->start() returned true.  Healthy boot.
+  //   RED    for ~5 sec  → adv->start() returned false. Init failure.
+  if (advStarted) {
+    fill_solid(pixels, NUM_PIXELS, CRGB::Green);
+    FastLED.show();
+    delay(800);
+  } else {
+    fill_solid(pixels, NUM_PIXELS, CRGB::Red);
+    FastLED.show();
+    delay(5000);
+  }
 
   // (boot complete — firmware now advertising as 'esp32c3-lab' on NUS)
 
