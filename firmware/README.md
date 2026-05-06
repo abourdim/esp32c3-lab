@@ -4,13 +4,27 @@ Exposes a Nordic UART Service over BLE on the ESP32-C3 SuperMini.
 Browser sends ASCII line commands, firmware drives the v3 hardware,
 and replies / streams telemetry.
 
+## Layout
+
+```
+firmware/
+├── platformio.ini              ← uses src_dir = esp32c3-lab
+├── README.md
+└── esp32c3-lab/
+    └── esp32c3-lab.ino         ← the actual sketch
+```
+
+The `.ino` lives in a folder of the same name so **Arduino IDE** is happy.
+**PlatformIO** picks up the same folder via `src_dir = esp32c3-lab` in
+`platformio.ini`.
+
 ## Build with PlatformIO
 
 ```
-cd firmware/
-pio run                      # compile
+cd firmware/                    # NOT firmware/esp32c3-lab/
+pio run                         # compile
 pio run -t upload --upload-port COM8   # flash (Windows)
-pio device monitor -b 115200            # watch the boot log
+pio device monitor -b 115200    # watch the boot log
 ```
 
 `platformio.ini` already pins:
@@ -27,7 +41,7 @@ pio device monitor -b 115200            # watch the boot log
    - **NimBLE-Arduino** (h2zero)
    - **FastLED**
    - **ESP32Servo** (Kevin Harrington / madhephaestus)
-3. Open `esp32c3-lab.ino`.
+3. Open `firmware/esp32c3-lab/esp32c3-lab.ino`.
 4. Tools menu:
    - **Board:** ESP32C3 Dev Module
    - **USB CDC On Boot:** Enabled
