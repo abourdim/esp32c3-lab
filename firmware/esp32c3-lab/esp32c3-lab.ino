@@ -384,7 +384,11 @@ class RxCallbacks : public NimBLECharacteristicCallbacks {
 //  setup / loop
 // ═══════════════════════════════════════════════════════════
 void setup() {
-  Serial.begin(115200);
+  // Note: no Serial.begin() — Arduino-ESP32 2.0.16's symbol mapping for
+  // the esp32-c3-devkitm-1 board variant doesn't expose `Serial` to user
+  // code. Native USB CDC works without explicit init when
+  // ARDUINO_USB_CDC_ON_BOOT=1 is set in build_flags. Firmware
+  // communicates with the browser over BLE; no serial console needed.
 
   // Pin modes
   pinMode(PIN_BTN, INPUT_PULLUP);
@@ -436,7 +440,7 @@ void setup() {
   adv->setMaxPreferred(0x12);
   NimBLEDevice::startAdvertising();
 
-  Serial.println("[esp32c3-lab] Advertising as 'esp32c3-lab' on NUS.");
+  // (boot complete — firmware now advertising as 'esp32c3-lab' on NUS)
 
   // Boot: rainbow 1-frame swirl on the NeoPixels
   for (int i = 0; i < NUM_PIXELS; i++) pixels[i] = CHSV(i * 64, 255, 200);
