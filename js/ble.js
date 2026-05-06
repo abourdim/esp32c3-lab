@@ -46,7 +46,15 @@ async function connect() {
 
   try {
     device = await navigator.bluetooth.requestDevice({
-      filters: [{ services: [NUS_SERVICE] }],
+      // Multiple filters = OR. We accept matches by NUS service UUID,
+      // OR by device name prefix (because NimBLE often pushes the 128-bit
+      // service UUID into the scan-response packet that Chrome's filter
+      // doesn't read).
+      filters: [
+        { services:   [NUS_SERVICE] },
+        { namePrefix: 'esp32c3'      },
+        { name:       'esp32c3-lab'  },
+      ],
       optionalServices: [NUS_SERVICE],
     });
 
