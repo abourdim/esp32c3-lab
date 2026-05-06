@@ -460,8 +460,10 @@ void setup() {
   scanData.setCompleteServices(NimBLEUUID(NUS_SERVICE_UUID));
   adv->setScanResponseData(scanData);
 
-  adv->setMinInterval(0x06);   // 7.5 ms
-  adv->setMaxInterval(0x12);   // 22.5 ms
+  // NB: don't set MinInterval/MaxInterval below 0x20 (20 ms). The BLE
+  // spec rejects faster intervals for undirected advertising and NimBLE
+  // silently refuses to start. NimBLE's defaults (~100 ms) are fine.
+
   adv->start();
 
   // (boot complete — firmware now advertising as 'esp32c3-lab' on NUS)
