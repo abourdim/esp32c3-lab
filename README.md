@@ -124,6 +124,19 @@ Both stored in `localStorage` so the choice carries across pages.
 
 ---
 
+## Known issues / build gotchas
+
+Things that ate time in v0.1 and are worth a heads-up. Full forensics in [`robot_1` audit](https://github.com/abourdim/robot_1/blob/main/01_software/01_app/02_web/audit.html).
+
+| # | Symptom | Root cause | Fix |
+|---|---|---|---|
+| **BUG-011** | Web Bluetooth picker shows <em>"no compatible device"</em> even with the chip advertising | NimBLE relocates the 128-bit NUS UUID into the **scan-response packet** (because <code>esp32c3-lab</code> name + UUID overflows the 31-byte advertisement budget). Chrome's <code>requestDevice()</code> filter only reads the primary advertisement. | Filter list in [`js/ble.js`](js/ble.js) accepts **either** the NUS UUID **or** the device-name prefix. |
+| **BUG-012a** | <code>pio run</code> warns: <code>Ignore unknown configuration option 'build_flags_extra'</code> | I made up that directive. Doesn't exist in PlatformIO. | All `-D` flags consolidated into the one valid `build_flags`. |
+| **BUG-012b** | <code>pio run</code>: <code>Error: Nothing to build. Please put your source code files to the 'src' folder</code> | PlatformIO's default <code>src_dir = src</code>; the .ino was at the project root. | Layout: <code>firmware/esp32c3-lab/esp32c3-lab.ino</code> + <code>src_dir = esp32c3-lab</code>. Satisfies Arduino IDE's folder-name rule too. |
+| **BUG-012c** | Compile error: <code>'Serial' was not declared in this scope</code>, suggested alternative <code>Serial1</code> | <code>arduino-esp32 2.0.16</code>'s HWCDC alias for <code>Serial</code> doesn't fire on the <code>esp32-c3-devkitm-1</code> variant even with <code>ARDUINO_USB_CDC_ON_BOOT=1</code>. | Dropped the <code>Serial.*</code> calls. Firmware uses BLE log instead. |
+
+**Quick diagnostic for BUG-011:** install [nRF Connect](https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-mobile) on your phone, scan, expand the device. If the NUS UUID appears under "Scan Response Data" but not "Advertisement Data", you have the same issue and need the namePrefix filter pattern.
+
 ## Roadmap (v0.2+)
 
 Out of scope for v0.1 — see [`plan.html` § 9](plan.html#deferred):
